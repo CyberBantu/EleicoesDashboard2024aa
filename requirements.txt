@@ -4,8 +4,4 @@ numpy
 plotly
 folium
 streamlit-folium
-<<<<<<< HEAD
 geopandas
-=======
-geopandas
->>>>>>> 55f18061e072ee0ef301eb68cd2c49b9c422edd7
