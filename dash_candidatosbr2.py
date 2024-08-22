@@ -22,6 +22,12 @@ if page == "Prefeitos":
     #### Autor
     Christian Basilio, Gestor Público pela UFRJ e Pós-Graduando em Comunicação Política e Sociedade na ESPM.
     """)
+
+    st.sidebar.markdown("""
+    ### Contato
+    - Email: [Christianbasilio97@gmail.com](mailto:Christianbasilio97@gmail.com)
+    - LinkedIn: [linkedin.com/in/christianbasilio](https://www.linkedin.com/in/christianbasilioo/)
+    """)
     # Subtítulo para a seção de candidaturas por cor
     st.subheader('Candidaturas a Prefeituras por Cor nas Eleições de 2024')
     
@@ -31,6 +37,14 @@ if page == "Prefeitos":
     
     # Criando o percentual de candidatos
     pref_cor['Percentual'] = ((pref_cor['Candidatos'] / pref_cor['Candidatos'].sum() * 100).round(2)).astype(str) + '%'
+    
+     # Função para formatar os valores com unidades
+    def format_value(value):
+        return f'R${value:,.2f}'
+
+    # Aplicando a formatação aos dados
+    pref_cor['Media'] = pref_cor['Media'].apply(format_value)
+    pref_cor['Mediana'] = pref_cor['Mediana'].apply(format_value)
     
     # Criando gráfico interativo com plotly de contagem de candidaturas por cor
     fig_cor_pref = px.bar(
@@ -50,7 +64,7 @@ if page == "Prefeitos":
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top',
-            'font': dict(size=15)
+            'font': dict(size=12)
         },
         height=500,
         legend=dict(
@@ -63,20 +77,6 @@ if page == "Prefeitos":
         paper_bgcolor='rgba(0,0,0,0)',
     )
     
-    # Função para formatar os valores com unidades
-    def format_value(value):
-        if value >= 1e9:
-            return f'{value / 1e9:.2f} Bilhão'
-        elif value >= 1e6:
-            return f'{value / 1e6:.2f} Milhão'
-        elif value >= 1e3:
-            return f'{value / 1e3:.2f} Mil'
-        else:
-            return f'{value:.2f}'
-    
-    # Aplicando a formatação aos dados
-    pref_cor['Media'] = pref_cor['Media'].apply(format_value)
-    
     # Criando gráfico interativo com plotly de total de bens por cor
     fig_bens_cor = px.bar(
         pref_cor, 
@@ -85,7 +85,7 @@ if page == "Prefeitos":
         labels={'Total': 'Total de Bens', 'Cor': 'Cor'},
         color='Cor', 
         color_discrete_sequence=px.colors.qualitative.Set3, 
-        hover_data={'Media': True},  # Usando os dados formatados
+        hover_data={'Media': True, 'Mediana': True}
     )
     
     # Removendo o texto das barras
@@ -117,44 +117,10 @@ if page == "Prefeitos":
         st.plotly_chart(fig_cor_pref, use_container_width=True)
     with col2:
         st.plotly_chart(fig_bens_cor, use_container_width=True)
-    
+
     # Carregando a base de dados de gênero e cor
     genero_cor = pd.read_csv('base_dashboard/bens_vereador_agregado_cor_genero.csv')
     genero_cor.columns = ['Cor', 'Genero', 'Candidatos', 'Total', 'Media', 'Mediana']
-    
-    # Criando gráfico interativo com plotly de total de candidaturas por raça e gênero
-    fig_genero_cor_pref = px.bar(
-        genero_cor, 
-        x='Cor', 
-        y='Candidatos', 
-        labels={'Candidatos': 'Número de Candidatos', 'Cor': 'Cor'},
-        color='Genero', 
-        color_discrete_sequence=px.colors.qualitative.Set3,
-        barmode='group'  # Configurando para barras agrupadas
-    )
-    
-    # Atualizando o layout do gráfico
-    fig_genero_cor_pref.update_layout(
-        title={
-            'text': 'Total de Candidaturas por Raça e Gênero nas Eleições de 2024',
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'font': dict(size=15)
-        },
-        legend=dict(
-            x=1,
-            xanchor='center',
-            y=0.5,
-            yanchor='middle'
-        ),
-        height=500,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-    )
-    
-    # Exibindo o gráfico no Streamlit
-    st.plotly_chart(fig_genero_cor_pref, use_container_width=True)
     
     # Formatando os valores de média e mediana para exibição
     genero_cor['Media_format'] = genero_cor['Media'].apply(format_value)
@@ -279,8 +245,25 @@ if page == "Prefeitos":
 
     with col2:
         st.markdown("##### Candidaturas por Partido:")
-        fig_partido = px.pie(candidaturas_por_partido, names=candidaturas_por_partido.index, values=candidaturas_por_partido.values, labels={'names': 'Partido', 'values': 'Contagem'})
-        st.plotly_chart(fig_partido)
+        fig_partido_prefeitos = px.bar(
+            candidaturas_por_partido, 
+            x=candidaturas_por_partido.values, 
+            y=candidaturas_por_partido.index, 
+            orientation='h', 
+            labels={'x': 'Contagem', 'y': 'Partido'},
+            color=candidaturas_por_partido.index,  # Adiciona cores diferentes para cada partido
+            color_discrete_sequence=px.colors.qualitative.Set3  # Escolhe uma paleta de cores
+        )
+        fig_partido_prefeitos.update_layout(
+            margin=dict(l=20, r=20, t=20, b=20),
+            height=800,  # Ajuste a altura conforme necessário
+            bargap=0.1,  # Ajuste o espaçamento entre as barras (0 a 1)
+            title="Candidaturas por Partido",
+            xaxis_title="Contagem",
+            yaxis_title="Partido"
+        )
+        fig_partido_prefeitos.update_traces(texttemplate='%{x}', textposition='outside')
+        st.plotly_chart(fig_partido_prefeitos)
 
     with col3:
         st.markdown("##### Candidaturas por Gênero:")
@@ -297,14 +280,15 @@ if page == "Prefeitos":
 elif page == "Vereadores":
     # Título da página para vereadores
     st.title('Dados sobre Candidaturas a Vereadores nas Eleições de 2024')
-    st.subheader('Esta página está em construção.')
 
-    # Texto de introdução
     st.markdown("""
-    ## Introdução
-    As eleições municipais de 2024 no Brasil prometem ser um evento marcante, com uma diversidade de candidatos concorrendo às câmaras municipais das cidades brasileiras. 
-    Este dashboard interativo apresenta uma análise detalhada das candidaturas, destacando a distribuição por cor e gênero, bem como os bens declarados pelos candidatos.
-    Explore os gráficos abaixo para obter insights valiosos sobre o perfil dos candidatos.
+    ### Análise dos Dados Eleitorais de 2024
+
+    Esta análise foi realizada utilizando dados do TSE de 2024, coletados em 21 de agosto de 2024. 
+    O tratamento e a disposição dos dados foram feitos utilizando Python, Streamlit e outras bibliotecas de visualização e tratamento de dados.
+
+    #### Autor
+    Christian Basilio, Gestor Público pela UFRJ e Pós-Graduando em Comunicação Política e Sociedade na ESPM.
     """)
 
     # Subtítulo para a seção de candidaturas por cor
@@ -563,7 +547,24 @@ elif page == "Vereadores":
 
     with col2:
         st.markdown("##### Candidaturas por Partido:")
-        fig_partido = px.bar(candidaturas_por_partido, x=candidaturas_por_partido.values, y=candidaturas_por_partido.index, orientation='h', labels={'x': 'Contagem', 'y': 'Partido'})
+        fig_partido = px.bar(
+            candidaturas_por_partido, 
+            x=candidaturas_por_partido.values, 
+            y=candidaturas_por_partido.index, 
+            orientation='h', 
+            labels={'x': 'Contagem', 'y': 'Partido'},
+            color=candidaturas_por_partido.index,  # Adiciona cores diferentes para cada partido
+            color_discrete_sequence=px.colors.qualitative.Set3  # Escolhe uma paleta de cores
+        )
+        fig_partido.update_layout(
+            margin=dict(l=20, r=20, t=20, b=20),
+            height=800,  # Ajuste a altura conforme necessário
+            bargap=0.1,  # Ajuste o espaçamento entre as barras (0 a 1)
+            title="Candidaturas por Partido",
+            xaxis_title="Contagem",
+            yaxis_title="Partido"
+        )
+        fig_partido.update_traces(texttemplate='%{x}', textposition='outside')  # Adiciona rótulos nas barras
         st.plotly_chart(fig_partido)
 
     with col3:
