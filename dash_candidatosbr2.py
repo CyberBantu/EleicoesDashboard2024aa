@@ -18,12 +18,11 @@ if page == "Prefeitos":
 
     Esta análise foi realizada utilizando dados do TSE de 2024, coletados em 21 de agosto de 2024. 
     O tratamento e a disposição dos dados foram feitos utilizando Python, Streamlit e outras bibliotecas de visualização e tratamento de dados.
-
-    #### Autor
-    Christian Basilio, Gestor Público pela UFRJ e Pós-Graduando em Comunicação Política e Sociedade na ESPM.
     """)
 
     st.sidebar.markdown("""
+    ## Autor
+    Christian Basilio, da Baixada Fluminense-RJ, Gestor Público pela UFRJ e Pós-Graduando em Comunicação Política e Sociedade na ESPM.
     ### Contato
     - Email: [Christianbasilio97@gmail.com](mailto:Christianbasilio97@gmail.com)
     - LinkedIn: [linkedin.com/in/christianbasilio](https://www.linkedin.com/in/christianbasilioo/)
